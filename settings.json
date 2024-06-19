@@ -1,12 +1,12 @@
 {
-  "mqttServer": "192.168.50.228",
-  "mqttPort": 1883,
-  "mqttCredentialsName": "*******************",
+  "mqttServer": ,
+  "mqttPort": ,
+  "mqttCredentialsName": ,
   "bufferLimit": 40,
-  "mqttCredentialsPassword": "***************" ,
-  "S3Bucket":"persondetect",
+  "mqttCredentialsPassword": ,
+  "S3Bucket": ,
   "streams": {
-    "balcony/cameraMotion": "rtsp://************@192.168.50.215:554/stream1",
-    "garage/motionDetector": "rtsp://***********192.168.50.12:554/stream1"
+    "balcony/cameraMotion": ,
+    "garage/motionDetector": 
   }
 }
