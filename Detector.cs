@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using MQTTnet;
 using MQTTnet.Client;
@@ -26,8 +27,18 @@ namespace PersonDetector
 			this._streams = new List<StreamCapture>();
 			try
 			{
-				// try upload application settings
-				string jsonString = File.ReadAllText("settings.json");
+				// Get the current directory where the application is running (bin directory)
+				string binPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+				// Assume that the settings.json file is 3 levels higher than the bin directory
+				// The root project directory (where the .sln file is located) is usually 3 levels higher than bin\Debug\netX.X
+				string projectRoot = Path.GetFullPath(Path.Combine(binPath, @"..\..\..\"));
+
+				// Získanie cesty k settings.json
+				string settingsFilePath = Path.Combine(projectRoot, "settings.json");
+
+				// Get the path to settings.json
+				string jsonString = File.ReadAllText(settingsFilePath); //"settings.json"
 				settings = JsonSerializer.Deserialize<Settings>(jsonString);
 				logger.Log("App settings was correctly uploaded", this._name, ConsoleColor.Green);
 
