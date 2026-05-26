@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PersonDetector — Dokumentácia</title>
+  <style>
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --border:    #30363d;
+      --accent:    #58a6ff;
+      --accent2:   #3fb950;
+      --warn:      #d29922;
+      --danger:    #f85149;
+      --text:      #c9d1d9;
+      --text-dim:  #8b949e;
+      --code-bg:   #1f2428;
+      --radius:    8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .layout { display: flex; min-height: 100vh; }
+    nav {
+      width: 260px;
+      min-width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    nav .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    nav .logo span { font-size: 1.5rem; }
+    nav ul { list-style: none; }
+    nav ul li { margin-bottom: 6px; }
+    nav ul li a {
+      color: var(--text-dim);
+      font-size: 0.875rem;
+      display: block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all .15s;
+    }
+    nav ul li a:hover { color: var(--text); background: var(--border); text-decoration: none; }
+    nav ul li.sub a { padding-left: 20px; font-size: 0.82rem; }
+    nav .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-dim);
+      margin: 18px 8px 6px;
+    }
+    .lang-switch {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .lang-switch a {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .lang-switch a.active { background: var(--accent); color: #000; }
+    .lang-switch a:not(.active) { border: 1px solid var(--border); color: var(--text-dim); }
+
+    main { flex: 1; padding: 48px 56px; max-width: 960px; }
+
+    /* Headings */
+    h1 { font-size: 2.2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    h1 .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      background: var(--accent);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 20px;
+      vertical-align: middle;
+      margin-left: 10px;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+    .subtitle { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 36px; }
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #000;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    h3 { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 28px 0 10px; }
+    h4 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
+
+    p { margin-bottom: 14px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0 24px; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    thead tr { background: var(--surface); }
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(88,166,255,.04); }
+    code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      color: #e6edf3;
+    }
+
+    /* Code blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 16px 0 24px;
+      color: #e6edf3;
+    }
+
+    /* Images */
+    .img-wrap {
+      margin: 20px 0 28px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .img-wrap img { width: 100%; display: block; }
+    .img-caption {
+      background: var(--surface);
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+    .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 28px; }
+
+    /* Callouts */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      margin: 16px 0 24px;
+      font-size: 0.9rem;
+    }
+    .callout.warn  { background: rgba(210,153,34,.1);  border: 1px solid rgba(210,153,34,.3); }
+    .callout.info  { background: rgba(88,166,255,.1);  border: 1px solid rgba(88,166,255,.3); }
+    .callout .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* Issue badges */
+    .badge-red    { display:inline-block; background:#3d1f1f; color:#f85149; border:1px solid #6e2b2b; padding:1px 8px; border-radius:12px; font-size:.75rem; font-weight:600; }
+    .badge-yellow { display:inline-block; background:#3d3110; color:#d29922; border:1px solid #6e5010; padding:1px 8px; border-radius:12px; font-size:.75rem; font-weight:600; }
+    .badge-green  { display:inline-block; background:#1a3020; color:#3fb950; border:1px solid #2a5030; padding:1px 8px; border-radius:12px; font-size:.75rem; font-weight:600; }
+
+    /* Flow diagram */
+    .flow {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.83rem;
+      line-height: 1.8;
+      white-space: pre;
+      overflow-x: auto;
+      margin: 16px 0 28px;
+    }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.82rem; }
+
+    @media (max-width: 820px) {
+      nav { display: none; }
+      main { padding: 28px 20px; }
+      .img-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav>
+    <div class="logo"><span>🎯</span> PersonDetector</div>
+    <div class="section-label">Obsah</div>
+    <ul>
+      <li><a href="#s1">1. Identita projektu</a></li>
+      <li><a href="#s2">2. Účel systému</a></li>
+      <li><a href="#s3">3. Architektúra</a></li>
+      <li><a href="#s4">4. Popis tried</a></li>
+      <li class="sub"><a href="#s41">4.1 Program.cs</a></li>
+      <li class="sub"><a href="#s42">4.2 Settings.cs</a></li>
+      <li class="sub"><a href="#s43">4.3 Frame.cs</a></li>
+      <li class="sub"><a href="#s44">4.4 Logger.cs</a></li>
+      <li class="sub"><a href="#s45">4.5 Detector.cs</a></li>
+      <li class="sub"><a href="#s46">4.6 StreamCapture.cs</a></li>
+      <li><a href="#s5">5. Tok dát</a></li>
+      <li><a href="#s6">6. Závislosti</a></li>
+      <li><a href="#s7">7. Inštalácia</a></li>
+      <li><a href="#s8">8. Známe problémy</a></li>
+    </ul>
+    <div class="lang-switch">
+      <a href="README_SK.html" class="active">🇸🇰 SK</a>
+      <a href="README_EN.html">🇬🇧 EN</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+    <h1>PersonDetector <span class="badge">.NET 6.0 · C#</span></h1>
+    <p class="subtitle">Automatická detekcia osôb z IP kamier pomocou AWS AI služieb a integrácie s Home Assistant cez MQTT.</p>
+
+    <hr>
+
+    <!-- 1 -->
+    <h2 id="s1"><span class="num">1</span> Identita projektu</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Atribút</th><th>Hodnota</th></tr></thead>
+        <tbody>
+          <tr><td>Názov</td><td><code>PersonDetector</code></td></tr>
+          <tr><td>Typ</td><td>Konzolová aplikácia (Exe)</td></tr>
+          <tr><td>Framework</td><td>.NET 6.0</td></tr>
+          <tr><td>Jazyk</td><td>C# s <code>ImplicitUsings</code> a <code>Nullable</code></td></tr>
+          <tr><td>Paradigma</td><td>Asynchrónna, multi-threadová, event-driven</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2 -->
+    <h2 id="s2"><span class="num">2</span> Účel systému</h2>
+    <p>
+      Systém je <strong>automatizované riešenie pre sledovanie IP kamier</strong>. Sleduje viacero RTSP video streamov
+      a po prijatí signálu o pohybe z Home Assistant (cez MQTT) začne zachytávať snímky, analyzuje ich pomocou
+      <strong>AWS Rekognition AI</strong> a ak detekuje osobu, upozorní používateľa.
+    </p>
+
+    <!-- 3 -->
+    <h2 id="s3"><span class="num">3</span> Architektúra</h2>
+    <div class="img-wrap">
+      <img src="../docs/images/Concept.png" alt="Diagram architektúry systému" />
+      <div class="img-caption">📐 Celková architektúra systému — kamery, MQTT, C# aplikácia, AWS služby</div>
+    </div>
+    <p>Aplikácia integruje:</p>
+    <ul style="margin: 0 0 16px 20px; line-height: 2;">
+      <li><strong>Tapo IP kamery</strong> (C200, C310) poskytujúce RTSP video streamy</li>
+      <li><strong>Home Assistant</strong> ako spúšťač detekcie pohybu cez MQTT</li>
+      <li><strong>AWS Rekognition</strong> na AI detekciu osôb</li>
+      <li><strong>AWS S3</strong> na ukladanie detekovaných snímkov</li>
+      <li><strong>AWS SES</strong> na emailové notifikácie</li>
+    </ul>
+
+    <!-- 4 -->
+    <h2 id="s4"><span class="num">4</span> Popis tried</h2>
+
+    <h3 id="s41">4.1 Program.cs — Vstupný bod</h3>
+    <p>Životný cyklus aplikácie:</p>
+    <ol style="margin: 0 0 16px 20px; line-height: 2.2;">
+      <li>Vytvorí <code>Logger</code></li>
+      <li>Vytvorí <code>Detector</code> a zavolá <code>Settings()</code> (asynchrónna inicializácia)</li>
+      <li>Čaká na stlačenie klávesu (<code>Console.ReadKey</code>)</li>
+      <li>Zaloguje ukončenie a zavolá <code>detector.Stop()</code></li>
+    </ol>
+
+    <h3 id="s42">4.2 Settings.cs — Konfiguračný model</h3>
+    <p>POCO objekt deserializovaný zo súboru <code>settings.json</code>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Property</th><th>Typ</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr><td><code>mqttServer</code></td><td><code>string</code></td><td>IP adresa MQTT brokera</td></tr>
+          <tr><td><code>mqttPort</code></td><td><code>int</code></td><td>Port MQTT brokera (štandardne: 1883)</td></tr>
+          <tr><td><code>mqttCredentialsName</code></td><td><code>string</code></td><td>Používateľské meno pre MQTT</td></tr>
+          <tr><td><code>mqttCredentialsPassword</code></td><td><code>string</code></td><td>Heslo pre MQTT</td></tr>
+          <tr><td><code>bufferLimit</code></td><td><code>int</code></td><td>Max. počet snímkov uložených pri jednej detekcii pohybu</td></tr>
+          <tr><td><code>S3Bucket</code></td><td><code>string</code></td><td>Názov AWS S3 bucketu</td></tr>
+          <tr><td><code>streams</code></td><td><code>Dictionary&lt;string,string&gt;</code></td><td>Mapa: MQTT topic → RTSP URL</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="img-wrap">
+      <img src="../docs/images/Application Settings.png" alt="Konfiguračný súbor settings.json" />
+      <div class="img-caption">⚙️ Štruktúra settings.json — MQTT nastavenia, MQTT topicy a RTSP stream URL adresy (citlivé údaje sú skryté)</div>
+    </div>
+
+    <h3 id="s43">4.3 Frame.cs — Dátový model snímku</h3>
+    <pre>string date   // timestamp + názov kamery: "kamera_yyyy-MM-dd_HH:mm:ss"
+Mat    frame  // OpenCV Mat objekt (nekomprimované obrazové dáta v pamäti)</pre>
+
+    <h3 id="s44">4.4 Logger.cs — Logovací systém</h3>
+    <ul style="margin: 0 0 16px 20px; line-height: 2;">
+      <li>Dvojitý výstup: farebná konzola + súbor <code>log.txt</code></li>
+      <li>Thread-safe cez <code>lock(_lock)</code></li>
+      <li>Automaticky vytvorí <code>log.txt</code> ak neexistuje</li>
+      <li>Formát záznamu: <code>yyyy:MM:dd HH:mm:ss [názov_komponentu] správa</code></li>
+    </ul>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Farba</th><th>Význam</th></tr></thead>
+        <tbody>
+          <tr><td>🟢 Zelená</td><td>Úspech (pripojenie, detekcia)</td></tr>
+          <tr><td>🔴 Červená</td><td>Chyba, zastavenie</td></tr>
+          <tr><td>🔵 Modrá</td><td>Info (nový capture objekt)</td></tr>
+          <tr><td>⚪ Sivá</td><td>Štandardná správa</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="img-wrap">
+      <img src="../docs/images/Console logs.png" alt="Konzolový výstup aplikácie" />
+      <div class="img-caption">🖥️ Anotovaný konzolový výstup — celá štartovacia sekvencia a udalosť detekcie osoby</div>
+    </div>
+
+    <h3 id="s45">4.5 Detector.cs — Hlavný orchestrátor</h3>
+
+    <h4>Konštruktor</h4>
+    <ul style="margin: 0 0 14px 20px; line-height: 2;">
+      <li>Načíta <code>settings.json</code> (cesta sa vypočíta 3 úrovne hore od <code>bin/Debug/net6.0/</code>)</li>
+      <li>Deserializuje JSON do <code>Settings</code> pomocou <code>System.Text.Json</code></li>
+      <li>Vytvorí MQTT klienta cez <code>MqttFactory</code></li>
+    </ul>
+
+    <h4>Settings() — Asynchrónna inicializácia</h4>
+    <ol style="margin: 0 0 14px 20px; line-height: 2.2;">
+      <li>Validuje MQTT konfiguráciu</li>
+      <li>Registruje event handlery (<code>Connected</code>, <code>Disconnected</code>, <code>MessageReceived</code>)</li>
+      <li>Pripojí sa k MQTT brokeru</li>
+      <li>Subscribeuje sa na topic pre každý nakonfigurovaný stream (QoS 0)</li>
+      <li>Vytvorí a spustí všetky inštancie <code>StreamCapture</code></li>
+    </ol>
+
+    <h4>MQTT Message Handler</h4>
+    <p>Keď príde udalosť pohybu z Home Assistant:</p>
+    <div class="img-wrap">
+      <img src="../docs/images/Home Assistant MQTT Broker Garage Motion Detector.png" alt="Home Assistant MQTT správy" />
+      <div class="img-caption">📡 Home Assistant MQTT broker — počúvanie na topic detektora pohybu, príjem správ "on" / "off"</div>
+    </div>
+    <pre>payload == "on"  → readingStart() na príslušnom streame
+payload != "on"  → readingStop()  na príslušnom streame</pre>
+
+    <h3 id="s46">4.6 StreamCapture.cs — Jadro systému</h3>
+    <p>Najkomplexnejšia trieda. Spravuje celý životný cyklus jednej kamery.</p>
+
+    <h4>Stavové premenné</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Premenná</th><th>Typ</th><th>Ochrana</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr><td><code>running</code></td><td><code>bool</code></td><td>—</td><td>Riadi hlavný loop oboch vlákien</td></tr>
+          <tr><td><code>reading</code></td><td><code>bool</code></td><td><code>_readingLock</code></td><td>Či sa majú ukladať snímky</td></tr>
+          <tr><td><code>buffer</code></td><td><code>List&lt;List&lt;Frame&gt;&gt;</code></td><td><code>_lock</code></td><td>Zdieľaný buffer medzi vláknami</td></tr>
+          <tr><td><code>tasks</code></td><td><code>List&lt;Task&gt;</code></td><td>—</td><td>2 vlákna: FrameCatch + ProcessBufferItem</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Vlákno 1: FrameCatch()</h4>
+    <p>
+      Nepretržite číta snímky z RTSP streamu. Pri výpadku streamu sa <code>VideoCapture</code> zahodí a vytvorí znovu —
+      automatický reconnect kamery.
+    </p>
+    <div class="img-grid">
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/RTSP Stream from Balcony camera.jpg" alt="RTSP stream balkónovej kamery" />
+        <div class="img-caption">🏡 Balkónová kamera — Tapo C200</div>
+      </div>
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/RTSP Stream from Garage camera.jpg" alt="RTSP stream garáže" />
+        <div class="img-caption">🏠 Kamera garáže — Tapo C310</div>
+      </div>
+    </div>
+
+    <h4>Vlákno 2: ProcessBufferItem()</h4>
+    <pre>1. Vezmi prvý item z bufferu (thread-safe)
+2. Skontroluj snímky na indexe 1, 2, 3 a prostredný snímok
+3. Pre každý: ConvertMatToByteArray → DetectPersonInImage (AWS Rekognition)
+4. Nájdi snímok s najvyššou confidence
+5. Ak bola detekovaná osoba (confidence ≥ 75 %):
+   - StoreToS3Bucket()
+   - SendEmailWithAttachment()
+6. Dispose všetkých snímkov
+7. Sleep(100ms) — uvoľnenie CPU</pre>
+
+    <h4>DetectPersonInImage() — AWS Rekognition</h4>
+    <pre>Vstup:  byte[] (JPEG snímok)
+Výstup: float (confidence 0–100, alebo 0 ak osoba nenájdená)
+
+Parametre požiadavky:
+  MaxLabels:     10
+  MinConfidence: 75 %
+
+Logika:
+  Prechádza všetky detekované labely
+  Hľadá label "person" s confidence >= 75
+  Vracia najvyššie confidence (ak viacero detekcií)</pre>
+
+    <h4>StoreToS3Bucket() — AWS S3</h4>
+    <p>Formát kľúča objektu: <code>{názov_kamery}/{timestamp}_{confidence}_{index}</code></p>
+    <p>Príklad: <code>balcony_cameraMotion/2024-06-13_10:41:32_95,40874_1</code></p>
+    <div class="img-grid">
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/AWS S3 Database logs from Balcony camera.png" alt="AWS S3 záznamy balkónu" />
+        <div class="img-caption">☁️ Balkónová kamera — 309 objektov v S3</div>
+      </div>
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/AWS S3 Database logs from Garage camera.png" alt="AWS S3 záznamy garáže" />
+        <div class="img-caption">☁️ Kamera garáže — 259 objektov v S3</div>
+      </div>
+    </div>
+
+    <h4>SendEmailWithAttachment() — AWS SES</h4>
+    <p>Obsah emailu: <strong>Predmet</strong> = názov kamery · <strong>Telo</strong> = názov kamery + S3 kľúč + timestamp · <strong>Príloha</strong> = JPEG snímok</p>
+    <div class="img-grid">
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/Email from Balcony camera.png" alt="Email z balkónovej kamery" />
+        <div class="img-caption">📧 Email — detekcia na balkónovej kamere</div>
+      </div>
+      <div class="img-wrap" style="margin:0">
+        <img src="../docs/images/Email from Garage camera.png" alt="Email z kamery garáže" />
+        <div class="img-caption">📧 Email — detekcia na kamere garáže</div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <h2 id="s5"><span class="num">5</span> Celkový tok dát</h2>
+    <div class="flow">PIR senzor
+    │
+    ▼
+Home Assistant
+    │  MQTT topic: "kamera/motionDetector"
+    │  Payload: "on" / "off"
+    ▼
+Detector.HandleReceivedMessageAsync()
+    │
+    ├─► "on"  → StreamCapture.readingStart()
+    │              │
+    │              ▼
+    │          FrameCatch() začne plniť buffer
+    │
+    └─► "off" → StreamCapture.readingStop()
+                   │
+                   ▼
+               internalList → buffer (presunutie)
+                   │
+                   ▼
+               ProcessBufferItem() prevezme buffer
+                   │
+                   ▼
+               Vyber snímky [1, 2, 3, prostredný]
+                   │
+                   ▼
+               AWS Rekognition (DetectLabels)
+                   │
+                   ├── confidence &lt; 75 % → preskočiť
+                   │
+                   └── confidence ≥ 75 % → osoba detekovaná!
+                           │
+                           ├─► AWS S3: uloží najlepší snímok
+                           └─► AWS SES: odošle email s fotkou</div>
+
+    <!-- 6 -->
+    <h2 id="s6"><span class="num">6</span> Závislosti (NuGet balíčky)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Balíček</th><th>Verzia</th><th>Účel</th></tr></thead>
+        <tbody>
+          <tr><td><code>AWSSDK.Rekognition</code></td><td>3.7.302.25</td><td>AI detekcia objektov a osôb</td></tr>
+          <tr><td><code>AWSSDK.S3</code></td><td>3.7.308.7</td><td>Cloudové úložisko snímkov</td></tr>
+          <tr><td><code>AWSSDK.SimpleEmail</code></td><td>3.7.300.100</td><td>Emailové notifikácie</td></tr>
+          <tr><td><code>Emgu.CV</code></td><td>4.9.0.5494</td><td>OpenCV wrapper — čítanie videa</td></tr>
+          <tr><td><code>Emgu.CV.runtime.windows</code></td><td>4.9.0.5494</td><td>Natívne binárky OpenCV pre Windows</td></tr>
+          <tr><td><code>MimeKit</code></td><td>4.6.0</td><td>Zostavenie MIME emailu s prílohou</td></tr>
+          <tr><td><code>MQTTnet</code></td><td>4.3.6.1152</td><td>MQTT klient pre integráciu s Home Assistant</td></tr>
+          <tr><td><code>OpenCvSharp4</code></td><td>4.9.0.20240103</td><td>Alternatívny OpenCV wrapper (nevyužitý)</td></tr>
+          <tr><td><code>OpenCvSharp4.runtime.win</code></td><td>4.9.0.20240103</td><td>Natívne binárky pre OpenCvSharp</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 7 -->
+    <h2 id="s7"><span class="num">7</span> Inštalácia</h2>
+    <ol style="margin: 0 0 20px 20px; line-height: 2.4;">
+      <li>Naklonuj repozitár</li>
+      <li>Skopíruj <code>settings.template.json</code> do <code>settings.json</code></li>
+      <li>Vyplň hodnoty (MQTT broker, AWS S3 bucket, RTSP stream URL adresy)</li>
+      <li>Nakonfiguruj AWS credentials cez <code>~/.aws/credentials</code> alebo environment variables</li>
+      <li>Skompiluj a spusti:</li>
+    </ol>
+    <pre>dotnet build
+dotnet run</pre>
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <span><code>settings.json</code> je uvedený v <code>.gitignore</code> — nikdy ho necommituj s reálnymi prihlasovacími údajmi. Ako vzor použi <code>settings.template.json</code>.</span>
+    </div>
+
+    <!-- 8 -->
+    <h2 id="s8"><span class="num">8</span> Známe problémy a návrhy na zlepšenie</h2>
+
+    <h3>🔴 Kritické</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Problém</th><th>Miesto</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><span class="badge-red">async void</span></td>
+            <td><code>StreamCapture.cs:172</code></td>
+            <td><code>ProcessBufferItem()</code> je <code>async void</code> — výnimky sa potichu prehltia</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><span class="badge-red">ForEach + async</span></td>
+            <td><code>Detector.cs:148</code></td>
+            <td><code>Stop()</code> používa <code>async</code> lambdu vo <code>ForEach</code> — nie je správne awaited</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><span class="badge-red">Chýba reconnect</span></td>
+            <td><code>Detector.cs:197</code></td>
+            <td>Po výpadku MQTT brokera sa aplikácia nikdy nepripojí späť — logika je zakomentovaná</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🟡 Stredné</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Problém</th><th>Miesto</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr><td>4</td><td><span class="badge-yellow">Nový klient pri každom volaní</span></td><td><code>StreamCapture.cs:335</code></td><td><code>AmazonRekognitionClient</code> a <code>AmazonS3Client</code> sa vytvárajú pri každom snímku</td></tr>
+          <tr><td>5</td><td><span class="badge-yellow">Chyba vo validácii</span></td><td><code>Detector.cs:65</code></td><td>Používa <code>&amp;&amp;</code> namiesto <code>||</code> — validácia zlyhá len ak sú VŠETKY MQTT parametre prázdne naraz</td></tr>
+          <tr><td>6</td><td><span class="badge-yellow">Index 0 sa preskočí</span></td><td><code>StreamCapture.cs:202</code></td><td>Prvý snímok bufferu sa nikdy neposiela na analýzu</td></tr>
+          <tr><td>7</td><td><span class="badge-yellow">Potenciálny index mimo rozsahu</span></td><td><code>StreamCapture.cs:202</code></td><td>Buffer s menej ako 4 snímkami môže hodiť <code>ArgumentOutOfRangeException</code></td></tr>
+          <tr><td>8</td><td><span class="badge-yellow">Chýba IDisposable</span></td><td><code>Frame.cs</code></td><td><code>Mat</code> je unmanaged resource — trieda by mala implementovať <code>IDisposable</code></td></tr>
+          <tr><td>9</td><td><span class="badge-yellow">Hardcoded región</span></td><td><code>StreamCapture.cs:251</code></td><td><code>EUCentral1</code> je napevno v kóde, mal by byť v konfigurácii</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🟢 Menšie / Návrhy</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Návrh</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td><span class="badge-green">Windows Service</span></td><td>Aplikácia beží kým niekto nestlačí klávesu — pre produkciu vhodnejší <code>BackgroundService</code></td></tr>
+          <tr><td>11</td><td><span class="badge-green">Cesta k settings</span></td><td><code>../../../settings.json</code> funguje len pri Debug buildu</td></tr>
+          <tr><td>12</td><td><span class="badge-green">Hardcoded emailové adresy</span></td><td>From/To adresy sú natvrdo v <code>StreamCapture.cs</code> — mali by byť v <code>settings.json</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      <p>PersonDetector · C# .NET 6.0 · <a href="https://github.com/tomasko1987/PersonDetector">github.com/tomasko1987/PersonDetector</a></p>
+    </footer>
+  </main>
+</div>
+</body>
+</html>
