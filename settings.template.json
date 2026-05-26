@@ -1,0 +1,11 @@
+{
+  "mqttServer": "",
+  "mqttPort": 0,
+  "mqttCredentialsName": "",
+  "bufferLimit": 40,
+  "mqttCredentialsPassword": "",
+  "S3Bucket": "",
+  "streams": {
+    "camera1/motionDetector": ""
+  }
+}
